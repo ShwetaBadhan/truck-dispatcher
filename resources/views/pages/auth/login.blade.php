@@ -16,8 +16,8 @@
     <link rel="stylesheet" href="{{ asset('font/fonts.css') }}">
     <link rel="stylesheet" href="{{ asset('icon/style.css') }}">
 
-    <link rel="shortcut icon" href="{{ asset('images/favicon.png') }}">
-    <link rel="apple-touch-icon-precomposed" href="{{ asset('images/favicon.png') }}">
+    <link rel="shortcut icon" href="https://www.ambedkariti.com/storage/settings/1787303479_favicon.png">
+    <link rel="apple-touch-icon-precomposed" href="https://www.ambedkariti.com/storage/settings/1787303479_favicon.png">
 </head>
 
 <body class="body">
@@ -25,7 +25,7 @@
         <div id="page" class="">
             <div class="login-page">
                 <div class="left">
-                    <img src="{{ asset('images/images-section/sign-in.jpg') }}" alt="image">
+                    <img src="{{ asset('images/truck.png') }}" alt="image">
                 </div>
                 <div class="right">
                     <div class="login-box">
