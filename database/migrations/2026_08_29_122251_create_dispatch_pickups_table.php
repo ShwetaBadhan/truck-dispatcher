@@ -1,0 +1,33 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('dispatch_pickups', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('dispatch_id')->constrained('dispatches')->cascadeOnDelete();
+            $table->foreignId('shipper_id')->constrained('companies')->cascadeOnDelete();
+            $table->date('pickup_date')->nullable();
+            $table->string('street')->nullable();
+            $table->string('weight')->nullable();
+            $table->string('quantity')->nullable();
+            $table->foreignId('country_id')->nullable()->constrained('countries')->nullOnDelete();
+            $table->foreignId('state_id')->nullable()->constrained('states')->nullOnDelete();
+            $table->foreignId('city_id')->nullable()->constrained('cities')->nullOnDelete();
+            $table->string('type')->nullable();
+            $table->text('instructions')->nullable();
+            $table->text('notes')->nullable();
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('dispatch_pickups');
+    }
+};
