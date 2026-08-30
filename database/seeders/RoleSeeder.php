@@ -13,22 +13,39 @@ class RoleSeeder extends Seeder
     {
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // 1. Super Admin → ALL Permissions
+        // 1. SUPER ADMIN → ALL Permissions
         $superAdmin = Role::firstOrCreate(
             ['name' => 'super-admin', 'guard_name' => 'web'],
             ['status' => true]
         );
         $superAdmin->syncPermissions(Permission::all());
 
-        // 2. Admin → All clinic permissions (except user/role management)
-        $admin = Role::firstOrCreate(
-            ['name' => 'admin', 'guard_name' => 'web'],
+        // 2. TEACHER → Manage lectures, syllabus, batches, students (except user/role management)
+        $teacher = Role::firstOrCreate(
+            ['name' => 'teacher', 'guard_name' => 'web'],
             ['status' => true]
         );
-        $admin->syncPermissions(
-            Permission::whereNotIn('group_name', ['Users', 'Roles'])->get()
-        );
+        $teacher->syncPermissions(Permission::whereIn('group_name', [
+            'Dashboard',
+            'Sidebar',
+            'Lectures',
+            'Syllabus',
+            'Batches',
+            'Students',
+        ])->get());
 
-       
+        $student = Role::firstOrCreate(
+            ['name' => 'student', 'guard_name' => 'web'],
+            ['status' => true]
+        );
+        $student->syncPermissions([
+            'view-dashboard',
+            'view-lectures',
+            'view-syllabus',
+            'view-batches',
+            'view-own-lectures',
+            'view-syllabus-details',
+            'edit-own-profile',
+        ]);
     }
 }
