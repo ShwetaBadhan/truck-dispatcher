@@ -18,7 +18,7 @@ public function index()
 
     $query = DailyLecture::query()->with(['batch', 'syllabus', 'teacher']);
 
-    /
+    
     if ($student) {
         $query->where('batch_id', $student->batch_id);
     }

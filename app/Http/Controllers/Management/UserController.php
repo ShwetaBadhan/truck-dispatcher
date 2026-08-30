@@ -43,35 +43,41 @@ $roles = Role::all();
      * Store newly created user
      */
     public function store(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'role' => 'required|exists:roles,name',
-            'phone' => 'nullable|string|max:20',
-            'password' => 'required|min:8|confirmed',
-            'status' => 'nullable|in:0,1',
-            'profile_photo' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:800'
-        ]);
+{
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|email|unique:users,email',
+        'role' => 'required|exists:roles,name',
+        'phone' => 'nullable|string|max:20',
+        'password' => 'required|min:8|confirmed',
+        'status' => 'nullable|in:0,1',
+        'profile_photo' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:800'
+    ]);
 
-        $data = [
-            'name' => $request->name,
-            'email' => $request->email,
-            'phone' => $request->phone,
-            'password' => Hash::make($request->password),
-            'status' => $request->status ?? 1
-        ];
+    $data = [
+        'name' => $request->name,
+        'email' => $request->email,
+        'phone' => $request->phone,
+        'password' => Hash::make($request->password),
+        'status' => $request->status ?? 1
+    ];
 
-        // ✅ Handle profile photo
-        if ($request->hasFile('profile_photo')) {
-            $data['profile_photo'] = $request->file('profile_photo')->store('profile-photos', 'public');
-        }
-
-        $user = User::create($data);
-        $user->assignRole($request->role);
-
-        return redirect()->route('users.index')->with('success', 'User created successfully!');
+    if ($request->hasFile('profile_photo')) {
+        $data['profile_photo'] = $request->file('profile_photo')->store('profile-photos', 'public');
     }
+
+    $user = User::create($data);
+    $user->assignRole($request->role);
+
+  
+    $student = \App\Models\Student::where('email', $user->email)->whereNull('user_id')->first();
+
+    if ($student) {
+        $student->update(['user_id' => $user->id]);
+    }
+
+    return redirect()->route('users.index')->with('success', 'User created successfully!');
+}
 
     /**
      * Update existing user

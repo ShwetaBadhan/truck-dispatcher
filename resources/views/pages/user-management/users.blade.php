@@ -169,68 +169,89 @@
             {{-- ========================================== --}}
             {{-- 1. CREATE USER MODAL --}}
             {{-- ========================================== --}}
-            <div class="modal fade" id="createUserModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered modal-lg">
-                    <div class="modal-content">
-                        <div class="modal-header border-0">
-                            <h5 class="modal-title">Add New User</h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                        </div>
-                        <form action="{{ route('users.store') }}" method="POST" enctype="multipart/form-data">
-                            @csrf
-                            <div class="modal-body row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Name *</label>
-                                    <input type="text" name="name" class="form-control border-secondary" required>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Email *</label>
-                                    <input type="email" name="email" class="form-control border-secondary" required>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Phone</label>
-                                    <input type="text" name="phone" class="form-control border-secondary">
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Status</label>
-                                    <select name="status" class="select border-secondary">
-                                        <option value="" selected disabled>Select Status</option>
-                                        <option value="1">Active</option>
-                                        <option value="0">Inactive</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Password *</label>
-                                    <input type="password" name="password" class="form-control border-secondary"
-                                        required>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Confirm Password *</label>
-                                    <input type="password" name="password_confirmation"
-                                        class="form-control border-secondary" required>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Select Role *</label>
-                                    <select name="role" class="select border-secondary" required>
-                                        <option value="">-- Choose Role --</option>
-                                        @foreach ($roles as $role)
-                                            <option value="{{ $role->name }}">{{ ucfirst($role->name) }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Profile Photo</label>
-                                    <input type="file" name="profile_photo" class="form-control border-secondary">
-                                </div>
-                            </div>
-                            <div class="modal-footer border-0">
-                                <button type="button" class="btn tf-button" data-bs-dismiss="modal">Cancel</button>
-                                <button type="submit" class="btn tf-button">Save User</button>
-                            </div>
-                        </form>
+           <div class="modal fade" id="createUserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title">Add New User</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ route('users.store') }}" method="POST" enctype="multipart/form-data" id="createUserForm">
+                @csrf
+                <div class="modal-body row">
+                    
+                    {{-- STEP 1: Role Select --}}
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Select Role <span class="text-danger">*</span></label>
+                        <select name="role" id="create_role" class="select border-secondary" required>
+                            <option value="">-- Choose Role --</option>
+                            @foreach ($roles as $role)
+                                <option value="{{ $role->name }}">{{ ucfirst($role->name) }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    {{-- STEP 2: Student Select (sirf student role par) --}}
+                    <div class="col-md-6 mb-3" id="student_select_wrap" style="display:none;">
+                        <label class="form-label">Select Student <span class="text-danger">*</span></label>
+                        <select name="student_id" id="create_student_id" class="select border-secondary">
+                            <option value="">Loading students...</option>
+                        </select>
+                    </div>
+
+                    {{-- Name --}}
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Name <span class="text-danger">*</span></label>
+                        <input type="text" name="name" id="create_name" class="form-control border-secondary" required>
+                    </div>
+
+                    {{-- Email --}}
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Email <span class="text-danger">*</span></label>
+                        <input type="email" name="email" id="create_email" class="form-control border-secondary" required>
+                    </div>
+
+                    {{-- Phone --}}
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Phone</label>
+                        <input type="text" name="phone" id="create_phone" class="form-control border-secondary">
+                    </div>
+
+                    {{-- Status --}}
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Status</label>
+                        <select name="status" class="select border-secondary">
+                            <option value="1" selected>Active</option>
+                            <option value="0">Inactive</option>
+                        </select>
+                    </div>
+
+                    {{-- Password --}}
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Password <span class="text-danger">*</span></label>
+                        <input type="password" name="password" class="form-control border-secondary" required>
+                    </div>
+
+                    {{-- Confirm Password --}}
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Confirm Password <span class="text-danger">*</span></label>
+                        <input type="password" name="password_confirmation" class="form-control border-secondary" required>
+                    </div>
+
+                    {{-- Profile Photo --}}
+                    <div class="col-md-12 mb-3">
+                        <label class="form-label">Profile Photo</label>
+                        <input type="file" name="profile_photo" class="form-control border-secondary">
                     </div>
                 </div>
-            </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn tf-button" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn tf-button">Save User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
             {{-- ========================================== --}}
             {{-- 2. EDIT USER MODAL --}}
@@ -311,55 +332,99 @@
 @endsection
 
 @push('scripts')
-    {{-- JavaScript for Edit Modal --}}
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            document.querySelectorAll('.edit-user-btn').forEach(button => {
-                button.addEventListener('click', function() {
-                    document.getElementById('editUserForm').action = this.getAttribute(
-                        'data-update-url');
-                    document.getElementById('edit_name').value = this.getAttribute('data-name');
-                    document.getElementById('edit_email').value = this.getAttribute('data-email');
-                    document.getElementById('edit_phone').value = this.getAttribute('data-phone');
-                    document.getElementById('edit_role').value = this.getAttribute('data-role');
-                    document.getElementById('edit_status').value = this.getAttribute('data-status');
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Create User Modal Logic
+    const roleSelect = document.getElementById('create_role');
+    const studentWrap = document.getElementById('student_select_wrap');
+    const studentSelect = document.getElementById('create_student_id');
+    const nameInput = document.getElementById('create_name');
+    const emailInput = document.getElementById('create_email');
+    const phoneInput = document.getElementById('create_phone');
 
-                    let photoUrl = this.getAttribute('data-photo');
-                    let previewImg = document.getElementById('current_photo_preview');
-                    if (photoUrl) {
-                        previewImg.src = photoUrl;
-                        previewImg.style.display = 'block';
-                    } else {
-                        previewImg.style.display = 'none';
-                    }
+    let allStudents = [];
+
+    // Role change par
+    roleSelect.addEventListener('change', async function() {
+        const role = this.value.toLowerCase();
+
+        if (role === 'student') {
+            studentWrap.style.display = 'block';
+            studentSelect.setAttribute('required', 'required');
+
+            // Students fetch karein
+            try {
+                const res = await fetch('{{ route("ajax.all-students") }}');
+                allStudents = await res.json();
+                
+                studentSelect.innerHTML = '<option value="">-- Select Student --</option>';
+                allStudents.forEach(s => {
+                    const opt = document.createElement('option');
+                    opt.value = s.id;
+                    opt.textContent = `${s.name} (${s.email})${s.batch ? ' - ' + s.batch.name : ''}`;
+                    studentSelect.appendChild(opt);
                 });
+            } catch (e) {
+                studentSelect.innerHTML = '<option value="">Error loading students</option>';
+            }
+        } else {
+            studentWrap.style.display = 'none';
+            studentSelect.removeAttribute('required');
+            nameInput.value = '';
+            emailInput.value = '';
+            phoneInput.value = '';
+        }
+    });
+
+    // Student select par auto-fill
+    studentSelect.addEventListener('change', function() {
+        const student = allStudents.find(s => s.id == this.value);
+        if (student) {
+            nameInput.value = student.name;
+            emailInput.value = student.email;
+            phoneInput.value = student.phone || '';
+        }
+    });
+
+    // Edit User Modal Logic (existing)
+    document.querySelectorAll('.edit-user-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            document.getElementById('editUserForm').action = this.getAttribute('data-update-url');
+            document.getElementById('edit_name').value = this.getAttribute('data-name');
+            document.getElementById('edit_email').value = this.getAttribute('data-email');
+            document.getElementById('edit_phone').value = this.getAttribute('data-phone');
+            document.getElementById('edit_role').value = this.getAttribute('data-role');
+            document.getElementById('edit_status').value = this.getAttribute('data-status');
+
+            let photoUrl = this.getAttribute('data-photo');
+            let previewImg = document.getElementById('current_photo_preview');
+            if (photoUrl) {
+                previewImg.src = photoUrl;
+                previewImg.style.display = 'block';
+            } else {
+                previewImg.style.display = 'none';
+            }
+        });
+    });
+
+    // Delete Confirmation
+    document.querySelectorAll('.delete-form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) form.submit();
             });
         });
-    </script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Delete Confirmation SweetAlert
-            document.querySelectorAll('.delete-form').forEach(form => {
-                form.addEventListener('submit', function(e) {
-                    e.preventDefault(); // Normal submit ko rok dein
-
-                    Swal.fire({
-                        title: 'Are you sure?',
-                        text: "You won't be able to revert this!",
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#d33',
-                        cancelButtonColor: '#3085d6',
-                        confirmButtonText: 'Yes, delete it!',
-                        cancelButtonText: 'Cancel'
-                    }).then((result) => {
-                       
-                        if (result.isConfirmed) {
-                            form.submit();
-                        }
-                    });
-                });
-            });
-        });
-    </script>
+    });
+});
+</script>
 @endpush

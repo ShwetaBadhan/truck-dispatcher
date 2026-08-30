@@ -98,7 +98,9 @@ Route::get('students/{student}/edit', [StudentController::class, 'edit'])->name(
 Route::put('students/{student}', [StudentController::class, 'update'])->name('students.update');
 Route::post('students/{student}/assign-batch', [StudentController::class, 'assignBatch'])->name('students.assign-batch');
 Route::delete('students/{student}', [StudentController::class, 'destroy'])->name('students.destroy');
-
+// Student Profile Edit 
+Route::get('profile/edit', [StudentController::class, 'editProfile'])->name('profile.edit');
+Route::post('profile/update', [StudentController::class, 'updateProfile'])->name('profile.update');
 
     // Daily Lectures
     Route::get('lectures', [DailyLectureController::class, 'index'])->name('lectures.index');
@@ -108,3 +110,7 @@ Route::delete('students/{student}', [StudentController::class, 'destroy'])->name
     Route::put('lectures/{lecture}', [DailyLectureController::class, 'update'])->name('lectures.update');
     Route::delete('lectures/{lecture}', [DailyLectureController::class, 'destroy'])->name('lectures.destroy');
 });
+
+
+
+Route::get('ajax/all-students', [\App\Http\Controllers\Management\StudentController::class, 'allStudents'])->name('ajax.all-students');

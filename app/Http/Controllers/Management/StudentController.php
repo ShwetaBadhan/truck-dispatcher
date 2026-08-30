@@ -28,10 +28,9 @@ class StudentController extends Controller
 {
     $data = $this->validateStudent($request);
 
-    $existingUser = User::where('email', $data['email'])->first();
-
+    // ✅ Sirf student record — user baad mein link hoga
     $studentData = [
-        'user_id' => $existingUser?->id,   
+        'user_id' => null,   // Abhi koi login nahi
         'name' => $data['name'],
         'email' => $data['email'],
         'phone' => $data['phone'] ?? null,
@@ -47,11 +46,6 @@ class StudentController extends Controller
     $studentData['aadhaar_pdf'] = $this->storeFile($request, 'aadhaar_pdf', 'students/documents', null);
 
     Student::create($studentData);
-
-    // User ko student role de do
-    if ($existingUser && !collect($existingUser->getRoleNames())->map(fn($r) => strtolower($r))->contains('student')) {
-        $existingUser->assignRole('student');
-    }
 
     return redirect()->route('students.index')->with('success', 'Student registered successfully!');
 }
@@ -103,7 +97,7 @@ class StudentController extends Controller
         return $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:students,email' . ($student ? ',' . $student->id : ''),
-            'phone' => 'required|string|max:20',
+            'phone' => 'nullable|string|max:20',
             'father_name' => 'nullable|string|max:255',
             'mother_name' => 'nullable|string|max:255',
             'address' => 'nullable|string',
@@ -124,4 +118,64 @@ class StudentController extends Controller
 
         return $request->file($field)->store($folder, 'public');
     }
+
+
+    public function allStudents()
+{
+   
+    $students = Student::where('status', 1)
+        ->with('batch:id,name')
+        ->orderBy('name')
+        ->get(['id', 'name', 'email', 'phone', 'batch_id']);
+
+    return response()->json($students);
+}
+// ✅ STUDENT: 
+public function editProfile()
+{
+    $student = auth()->user()->student;
+
+    if (!$student) {
+        return redirect()->route('dashboard')->with('error', 'Student profile not found!');
+    }
+
+    return view('pages.students.profile-edit', compact('student'));
+}
+
+public function updateProfile(Request $request)
+{
+    $student = auth()->user()->student;
+
+    if (!$student) {
+        return redirect()->route('dashboard')->with('error', 'Student profile not found!');
+    }
+
+    $data = $request->validate([
+        'name' => 'required|string|max:255',
+        'phone' => 'nullable|string|max:20',
+        'father_name' => 'nullable|string|max:255',
+        'mother_name' => 'nullable|string|max:255',
+        'address' => 'nullable|string',
+        'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        'matric_pdf' => 'nullable|file|mimes:pdf|max:5120',
+        'tenth_pdf' => 'nullable|file|mimes:pdf|max:5120',
+        'aadhaar_pdf' => 'nullable|file|mimes:pdf|max:5120',
+    ]);
+
+  
+    if ($photo = $this->storeFile($request, 'photo', 'students/photos', $student->photo_path)) $data['photo_path'] = $photo;
+    if ($matric = $this->storeFile($request, 'matric_pdf', 'students/documents', $student->matric_pdf)) $data['matric_pdf'] = $matric;
+    if ($tenth = $this->storeFile($request, 'tenth_pdf', 'students/documents', $student->tenth_pdf)) $data['tenth_pdf'] = $tenth;
+    if ($aadhaar = $this->storeFile($request, 'aadhaar_pdf', 'students/documents', $student->aadhaar_pdf)) $data['aadhaar_pdf'] = $aadhaar;
+
+    $student->update($data);
+
+   
+    $student->user?->update([
+        'name' => $data['name'],
+        'phone' => $data['phone'] ?? null,
+    ]);
+
+    return redirect()->route('profile.edit')->with('success', 'Profile updated successfully!');
+}
 }

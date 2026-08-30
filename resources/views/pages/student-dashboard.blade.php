@@ -3,295 +3,140 @@
 @section('content')
 <div class="section-content-right">
     <div class="main-content">
+        @if (session('success'))
+            <script>document.addEventListener('DOMContentLoaded', function() { Swal.fire({ icon: 'success', title: 'Done!', text: "{{ session('success') }}", timer: 2500, showConfirmButton: false }); });</script>
+        @endif
+
         <div class="main-content-inner">
             <div class="main-content-wrap">
 
+                {{-- ========== WELCOME BANNER ========== --}}
+                <div class="wg-box p-20 mb-20" style="background:linear-gradient(120deg, #1f2937 0%, #FF5200 100%); border-radius:12px; color:#fff;">
+                    <div class="flex items-center justify-between flex-wrap gap20">
+                        <div>
+                            <div class="text-tiny" style="color:rgba(255,255,255,.7); letter-spacing:1px;">STUDENT TRAINING WORKSPACE</div>
+                            <h3 style="color:#fff; margin:6px 0;">Welcome back, {{ auth()->user()->name }} 👋</h3>
+                            <div style="color:rgba(255,255,255,.85); max-width:640px;">
+                                Here, you can view your batch's daily lectures, syllabus topics, and training documents.
+                            </div>
+                        </div>
+                        <a href="{{ route('profile.edit') }}" class="tf-button" style="background:#FFB020; color:#111; font-weight:bold; text-decoration:none;">Edit Profile</a>
+                    </div>
+                </div>
+
                 @if (!$student || !$student->batch_id)
                     {{-- No batch assigned --}}
-                    <div class="wg-box p-40 mb-30" style="background:linear-gradient(135deg, #FF5200 0%, #ff8547 100%); color:#fff; border-radius:12px;">
-                        <h3 style="color:#fff;">Welcome, {{ auth()->user()->name }}! 👋</h3>
-                        <p style="color:rgba(255,255,255,0.9); margin-top:10px;">
-                            Your student profile has been created, but a batch has not yet been assigned. Please contact your teacher or administrator so you can view your daily lectures.
-                        </p>
+                    <div class="wg-box p-40 mb-30" style="background:#fff3cd; color:#856404; border-left:4px solid #ffc107;">
+                       <strong>No Batch Assigned!</strong> Your student profile has been created, but no batch has been assigned yet.
+                        Please contact the admin/teacher to access your daily lectures.
                     </div>
                 @else
 
-                {{-- ========== SECTION 1: 4 STAT CARDS ========== --}}
-                <div class="tf-section-3 mb-30">
-
-                    {{-- Card 1: Total Topics --}}
-                    <div class="wg-chart-default">
-                        <div class="top">
-                            <div class="flex items-center gap14">
-                                <div class="image type-white">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="52" height="52" viewBox="0 0 48 52" fill="none">
-                                        <path d="M19.1094 2.12943C22.2034 0.343099 26.0154 0.343099 29.1094 2.12943L42.4921 9.85592C45.5861 11.6423 47.4921 14.9435 47.4921 18.5162V33.9692C47.4921 37.5418 45.5861 40.8431 42.4921 42.6294L29.1094 50.3559C26.0154 52.1423 22.2034 52.1423 19.1094 50.3559L5.72669 42.6294C2.63268 40.8431 0.726688 37.5418 0.726688 33.9692V18.5162C0.726688 14.9435 2.63268 11.6423 5.72669 9.85592L19.1094 2.12943Z" fill="#FF5200" />
-                                    </svg>
-                                    <span class="icon">
-                                        <svg width="20" height="21" viewBox="0 0 20 21" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path fill-rule="evenodd" clip-rule="evenodd" d="M3 4.5C3 3.67157 3.67157 3 4.5 3H15.5C16.3284 3 17 3.67157 17 4.5V16.5C17 17.3284 16.3284 18 15.5 18H4.5C3.67157 18 3 17.3284 3 16.5V4.5Z" fill="white" />
-                                        </svg>
-                                    </span>
+                <div class="row">
+                    {{-- ========== PROFILE OVERVIEW ========== --}}
+                    <div class="col-md-8 mb-20">
+                        <div class="wg-box p-20">
+                            <h5 class="mb-20">Profile Overview</h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-15"><div class="body-title">Name:</div><div class="body-text">{{ $student->name }}</div></div>
+                                <div class="col-md-6 mb-15"><div class="body-title">Phone:</div><div class="body-text">{{ $student->phone ?? '-' }}</div></div>
+                                <div class="col-md-6 mb-15"><div class="body-title">Email:</div><div class="body-text">{{ $student->email }}</div></div>
+                                <div class="col-md-6 mb-15"><div class="body-title">Joining Date:</div><div class="body-text">{{ $student->created_at?->format('M d, Y') }}</div></div>
+                                <div class="col-md-6 mb-15"><div class="body-title">Father Name:</div><div class="body-text">{{ $student->father_name ?? '-' }}</div></div>
+                                <div class="col-md-6 mb-15"><div class="body-title">Mother Name:</div><div class="body-text">{{ $student->mother_name ?? '-' }}</div></div>
+                                <div class="col-md-6 mb-15">
+                                    <div class="body-title">Batch:</div>
+                                    <div class="body-text"><span style="background:#d1e7dd; color:#0f5132; padding:4px 10px; border-radius:4px; font-size:12px;">{{ $student->batch->name }}</span></div>
                                 </div>
-                                <div>
-                                    <div class="flex gap10 items-center">
-                                        <div class="body-text mt-2 mb-4">Topics Covered</div>
-                                        <div class="box-icon-trending up">
-                                            <i class="icon-trending-up"></i>
-                                            <div class="body-title number">{{ $progress }}%</div>
-                                        </div>
-                                    </div>
-                                    <h4>{{ $stats['topics'] }} / {{ $totalSyllabus }}</h4>
-                                </div>
+                                <div class="col-md-6 mb-15"><div class="body-title">Total Lectures:</div><div class="body-text">{{ $lectureCount }}</div></div>
+                                <div class="col-12 mb-15"><div class="body-title">Address:</div><div class="body-text">{{ $student->address ?? '-' }}</div></div>
                             </div>
                         </div>
                     </div>
 
-                    {{-- Card 2: Total Lectures --}}
-                    <div class="wg-chart-default">
-                        <div class="top">
-                            <div class="flex items-center gap14">
-                                <div class="image type-white">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="52" height="52" viewBox="0 0 48 52" fill="none">
-                                        <path d="M19.1094 2.12943C22.2034 0.343099 26.0154 0.343099 29.1094 2.12943L42.4921 9.85592C45.5861 11.6423 47.4921 14.9435 47.4921 18.5162V33.9692C47.4921 37.5418 45.5861 40.8431 42.4921 42.6294L29.1094 50.3559C26.0154 52.1423 22.2034 52.1423 19.1094 50.3559L5.72669 42.6294C2.63268 40.8431 0.726688 37.5418 0.726688 33.9692V18.5162C0.726688 14.9435 2.63268 11.6423 5.72669 9.85592L19.1094 2.12943Z" fill="#22C55E" />
-                                    </svg>
-                                    <span class="icon">
-                                        <svg width="20" height="21" viewBox="0 0 20 21" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path fill-rule="evenodd" clip-rule="evenodd" d="M10 2.25C5.44365 2.25 1.75 5.94365 1.75 10.5C1.75 15.0563 5.44365 18.75 10 18.75C14.5563 18.75 18.25 15.0563 18.25 10.5C18.25 5.94365 14.5563 2.25 10 2.25Z" fill="white" />
-                                        </svg>
-                                    </span>
-                                </div>
-                                <div>
-                                    <div class="flex gap10 items-center">
-                                        <div class="body-text mt-2 mb-4">Total Lectures</div>
-                                        <div class="box-icon-trending up">
-                                            <i class="icon-trending-up"></i>
-                                            <div class="body-title number">Attended</div>
-                                        </div>
-                                    </div>
-                                    <h4>{{ $stats['lectures'] }}</h4>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    {{-- ========== DOCUMENTS ========== --}}
+                    <div class="col-md-4 mb-20">
+                        <div class="wg-box p-20">
+                            <h5 class="mb-20">Documents</h5>
 
-                    {{-- Card 3: Assignments (PDFs) --}}
-                    <div class="wg-chart-default">
-                        <div class="top">
-                            <div class="flex items-center gap14">
-                                <div class="image type-white">
-                                    <svg width="52" height="52" viewBox="0 0 48 52" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M19.1084 2.12894C22.2024 0.34261 26.0144 0.342611 29.1084 2.12894L42.4911 9.85544C45.5851 11.6418 47.4911 14.943 47.4911 18.5157V33.9687C47.4911 37.5413 45.5851 40.8426 42.4911 42.6289L29.1084 50.3554C26.0144 52.1418 22.2024 52.1418 19.1084 50.3554L5.72571 42.6289C2.6317 40.8426 0.725712 37.5413 0.725712 33.9687V18.5157C0.725712 14.943 2.6317 11.6418 5.72571 9.85544L19.1084 2.12894Z" fill="#8F77F3" />
-                                    </svg>
-                                    <span class="icon">
-                                        <svg width="18" height="21" viewBox="0 0 18 21" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path fill-rule="evenodd" clip-rule="evenodd" d="M10.5 1.5C9.82674 1.5 9.25525 1.94413 9.06623 2.55717C9.02336 2.69622 9 2.84469 9 3H13.5C13.5 2.84469 13.4766 2.69622 13.4338 2.55717C13.2448 1.94413 12.6733 1.5 12 1.5H10.5Z" fill="white" />
-                                        </svg>
-                                    </span>
+                            @if ($student->photo_path)
+                                <div class="mb-15 text-center">
+                                    <img src="{{ $student->photo_url }}" alt="photo" style="width:80px; height:80px; object-fit:cover; border-radius:50%;">
                                 </div>
-                                <div>
-                                    <div class="flex gap10 items-center">
-                                        <div class="body-text mt-2 mb-4">Assignments</div>
-                                        <div class="box-icon-trending up">
-                                            <i class="icon-trending-up"></i>
-                                            <div class="body-title number">PDFs</div>
-                                        </div>
-                                    </div>
-                                    <h4>{{ $stats['assignments'] }}</h4>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                            @endif
 
-                    {{-- Card 4: Upcoming --}}
-                    <div class="wg-chart-default">
-                        <div class="top">
-                            <div class="flex items-center gap14">
-                                <div class="image type-white">
-                                    <svg width="52" height="52" viewBox="0 0 48 52" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M19.1084 2.12894C22.2024 0.34261 26.0144 0.342611 29.1084 2.12894L42.4911 9.85544C45.5851 11.6418 47.4911 14.943 47.4911 18.5157V33.9687C47.4911 37.5413 45.5851 40.8426 42.4911 42.6289L29.1084 50.3554C26.0144 52.1418 22.2024 52.1418 19.1084 50.3554L5.72571 42.6289C2.6317 40.8426 0.725712 37.5413 0.725712 33.9687V18.5157C0.725712 14.943 2.6317 11.6418 5.72571 9.85544L19.1084 2.12894Z" fill="#2377FC" />
-                                    </svg>
-                                    <span class="icon">
-                                        <svg width="20" height="21" viewBox="0 0 20 21" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path fill-rule="evenodd" clip-rule="evenodd" d="M10 2.25C5.44365 2.25 1.75 5.94365 1.75 10.5C1.75 15.0563 5.44365 18.75 10 18.75C14.5563 18.75 18.25 15.0563 18.25 10.5C18.25 5.94365 14.5563 2.25 10 2.25Z" fill="white" />
-                                        </svg>
-                                    </span>
-                                </div>
-                                <div>
-                                    <div class="flex gap10 items-center">
-                                        <div class="body-text mt-2 mb-4">Upcoming</div>
-                                        <div class="box-icon-trending up">
-                                            <i class="icon-trending-up"></i>
-                                            <div class="body-title number">Scheduled</div>
-                                        </div>
-                                    </div>
-                                    <h4>{{ $stats['upcoming'] }}</h4>
-                                </div>
+                            <div class="mb-10">
+                                @if ($student->matric_pdf)
+                                    <a href="{{ $student->matric_pdf_url }}" target="_blank" class="tf-button" style="width:100%; justify-content:center; text-decoration:none;">Matric PDF</a>
+                                @else
+                                    <span class="tf-button" style="width:100%; justify-content:center; opacity:.5;">Matric PDF (Not Uploaded)</span>
+                                @endif
                             </div>
+                            <div class="mb-10">
+                                @if ($student->tenth_pdf)
+                                    <a href="{{ $student->tenth_pdf_url }}" target="_blank" class="tf-button" style="width:100%; justify-content:center; text-decoration:none;">10th PDF</a>
+                                @else
+                                    <span class="tf-button" style="width:100%; justify-content:center; opacity:.5;">10th PDF (Not Uploaded)</span>
+                                @endif
+                            </div>
+                            <div class="mb-15">
+                                @if ($student->aadhaar_pdf)
+                                    <a href="{{ $student->aadhaar_pdf_url }}" target="_blank" class="tf-button" style="width:100%; justify-content:center; text-decoration:none;">Aadhaar PDF</a>
+                                @else
+                                    <span class="tf-button" style="width:100%; justify-content:center; opacity:.5;">Aadhaar PDF (Not Uploaded)</span>
+                                @endif
+                            </div>
+
+                            <a href="{{ route('profile.edit') }}" class="tf-button" style="background:#FFB020; color:#111; font-weight:bold; text-decoration:none;">Edit Profile</a>
                         </div>
                     </div>
                 </div>
 
-                {{-- ========== SECTION 2: MY PROGRESS + TOPICS + UPCOMING ========== --}}
-                <div class="tf-section-1 mb-30">
-
-                    {{-- Learning Progress Chart --}}
-                    <div class="wg-box">
-                        <div class="flex items-center justify-between">
-                            <h5>My Learning Journey — {{ $student->batch->name }}</h5>
-                            <div class="dropdown default style-box">
-                                <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                    <span class="view-all">Last 7 Days <i class="icon-chevron-down"></i></span>
-                                </button>
-                            </div>
+                {{-- ========== TRAINING MODULES ========== --}}
+                <div class="wg-box p-20 mb-20">
+                    <h5 class="mb-20">Training Modules</h5>
+                    <div class="row">
+                        <div class="col-md-6 mb-15">
+                            <a href="{{ route('syllabuses.index') }}" style="border:1px solid #5a5bd8; border-radius:8px; padding:15px; display:block; text-decoration:none;">
+                                <div style="color:#5a5bd8; font-weight:bold;">Syllabus</div>
+                                <div class="text-tiny" style="color:#6b7280;">View topics and available PDFs</div>
+                            </a>
                         </div>
-                        <div class="flex flex-wrap gap40">
-                            <div>
-                                <div class="mb-1"><div class="block-legend"><div class="dot t3"></div><div class="text-tiny">Daily Lectures</div></div></div>
-                                <div class="flex items-center gap12"><h4>{{ array_sum(array_column($activity, 'count')) }}</h4></div>
-                            </div>
-                            <div>
-                                <div class="mb-1"><div class="block-legend"><div class="dot t5"></div><div class="text-tiny">Syllabus Progress</div></div></div>
-                                <div class="flex items-center gap12">
-                                    <h4>{{ $progress }}%</h4>
-                                    <div class="box-icon-trending up"><i class="icon-trending-up"></i><div class="body-title number">{{ $coveredTopics }}/{{ $totalSyllabus }}</div></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div id="line-chart-7"></div>
-                    </div>
-
-                    <div class="flex gap20 flex-wrap-mobile">
-
-                        {{-- Syllabus Progress Donut --}}
-                        <div class="wg-box w-half">
-                            <div class="flex items-center justify-between">
-                                <h5>Syllabus Completion</h5>
-                            </div>
-                            <div class="donut-wrap mb-6">
-                                <div class="morris-donut" id="morris-donut-1"></div>
-                                <div class="center">
-                                    <div class="center-inner">
-                                        <p class="center-title">Completed</p>
-                                        <div class="center-value">{{ $progress }}%</div>
-                                        <div class="text-tiny text-surface-2">{{ $coveredTopics }} of {{ $totalSyllabus }} topics</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="flex gap15 justify-center">
-                                <div class="block-legend style-1">
-                                    <div class="dot t3"></div>
-                                    <div class="text-tiny">Covered ({{ $coveredTopics }})</div>
-                                </div>
-                                <div class="block-legend style-1">
-                                    <div class="dot t2"></div>
-                                    <div class="text-tiny">Remaining ({{ $totalSyllabus - $coveredTopics }})</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {{-- Top Topics (repeated learning) --}}
-                        <div class="wg-box w-half">
-                            <div class="flex items-center justify-between">
-                                <h5>Most Covered Topics</h5>
-                            </div>
-                            <ul class="flex flex-column h-full has-divider-line">
-                                @forelse ($topTopics as $syllabusId => $count)
-                                    @php $topic = $syllabusDetails[$syllabusId] ?? null; @endphp
-                                    @if ($topic)
-                                        <li class="wg-product">
-                                            <div class="name flex-grow">
-                                                <div class="image" style="background:#FF5200; width:40px; height:40px; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:bold;">
-                                                    {{ $loop->iteration }}
-                                                </div>
-                                                <div>
-                                                    <div class="title"><a href="#" class="body-text">{{ $topic->topic }}</a></div>
-                                                    <div class="price text-tiny">{{ $topic->short_details ? \Illuminate\Support\Str::limit($topic->short_details, 40) : 'Syllabus topic' }}</div>
-                                                </div>
-                                            </div>
-                                            <div class="sale body-text">{{ $count }}×</div>
-                                        </li>
-                                    @endif
-                                @empty
-                                    <li class="text-center body-text" style="padding:20px;">No topics covered yet.</li>
-                                @endforelse
-                            </ul>
+                        <div class="col-md-6 mb-15">
+                            <a href="{{ route('lectures.index') }}" style="border:1px solid #5a5bd8; border-radius:8px; padding:15px; display:block; text-decoration:none;">
+                                <div style="color:#5a5bd8; font-weight:bold;">Daily Lectures</div>
+                                <div class="text-tiny" style="color:#6b7280;">Open lectures shared for your batch</div>
+                            </a>
                         </div>
                     </div>
                 </div>
 
-                {{-- ========== SECTION 3: RECENT + UPCOMING ========== --}}
-                <div class="tf-section-4">
-
-                    {{-- Recent Lectures Table --}}
-                    <div class="wg-box">
-                        <div class="flex items-center justify-between">
-                            <h5>Recent Lectures</h5>
-                            <a href="{{ route('lectures.index') }}" class="body-text" style="color:#FF5200; text-decoration:none;">View All →</a>
-                        </div>
-                        <div class="wg-table table-recent-orders">
-                            <ul class="table-title flex gap20 mb-14">
-                                <li><div class="body-title text-main-dark">Date</div></li>
-                                <li><div class="body-title text-main-dark">Topic</div></li>
-                                <li><div class="body-title text-main-dark">Teacher</div></li>
-                                <li><div class="body-title text-main-dark">PDF</div></li>
-                                <li><div class="body-title text-main-dark">Status</div></li>
-                            </ul>
-                            <div class="divider mb-14"></div>
-                            <ul class="flex flex-column has-divider-line has-line-bot">
-                                @forelse ($recentLectures as $l)
-                                    <li class="item wg-product gap20">
-                                        <div class="body-text text-main-dark mt-4">{{ $l->lecture_date?->format('d M Y') }}</div>
-                                        <div class="title mb-0"><a href="#" class="body-text">{{ $l->syllabus?->topic ?? '-' }}</a></div>
-                                        <div class="body-text text-main-dark mt-4">{{ $l->teacher?->name ?? '-' }}</div>
-                                        <div class="body-text text-main-dark mt-4">
-                                            @if ($l->pdf_path)
-                                                <a href="{{ $l->pdf_url }}" target="_blank" style="color:#FF5200;">View</a>
-                                            @else - @endif
-                                        </div>
-                                        <div>
-                                            @if ($l->lecture_date && $l->lecture_date->isPast())
-                                                <div class="block-available fw-7">Completed</div>
-                                            @else
-                                                <div class="block-pending fw-7">Upcoming</div>
-                                            @endif
-                                        </div>
-                                    </li>
-                                @empty
-                                    <li class="text-center body-text" style="padding:20px;">No lectures yet.</li>
-                                @endforelse
-                            </ul>
-                        </div>
+                {{-- ========== ONLINE CLASSES ========== --}}
+                <div class="wg-box p-20 mb-20">
+                    <div class="flex items-center justify-between mb-15">
+                        <h5 style="margin:0;">Online Classes</h5>
+                        <span class="text-tiny">{{ $student->batch ? 1 : 0 }} links available</span>
                     </div>
+                    <div style="border:1px solid #eee; border-radius:8px; padding:12px 15px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                        <div class="body-text" style="font-weight:bold;">{{ $student->batch->name }}</div>
+                        <a href="{{ route('lectures.index') }}" class="tf-button" style="background:#FFB020; color:#111; font-size:12px; padding:5px 14px; text-decoration:none;">View Lectures</a>
+                    </div>
+                </div>
 
-                    {{-- Upcoming Lectures --}}
-                    <div class="wg-box">
-                        <div class="flex items-center justify-between">
-                            <h5>Upcoming Classes</h5>
-                        </div>
-                        <ul class="flex flex-column h-full has-divider-line">
-                            @forelse ($upcomingLectures as $l)
-                                <li class="wg-product">
-                                    <div class="name flex-grow">
-                                        <div class="image" style="background:#22C55E; width:40px; height:40px; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:bold; flex-direction:column; line-height:1;">
-                                            <div style="font-size:14px;">{{ $l->lecture_date?->format('d') }}</div>
-                                            <div style="font-size:9px;">{{ $l->lecture_date?->format('M') }}</div>
-                                        </div>
-                                        <div>
-                                            <div class="title"><a href="#" class="body-text">{{ $l->syllabus?->topic ?? '-' }}</a></div>
-                                            <div class="price text-tiny">by {{ $l->teacher?->name ?? 'Teacher' }}</div>
-                                        </div>
-                                    </div>
-                                    <div class="sale body-text">
-                                        <span style="background:#cfe2ff;color:#084298;padding:3px 8px;border-radius:4px;font-size:11px;">
-                                            {{ $l->lecture_date?->diffForHumans() }}
-                                        </span>
-                                    </div>
-                                </li>
-                            @empty
-                                <li class="text-center body-text" style="padding:20px;">No upcoming classes scheduled.</li>
-                            @endforelse
-                        </ul>
+                {{-- ========== HOLIDAYS & ANNOUNCEMENTS ========== --}}
+                <div class="wg-box p-20 mb-20">
+                    <h5 class="mb-20">Holidays & Announcements</h5>
+                    <div style="background:#bde3f7; border-radius:8px; padding:15px;">
+                        <div class="body-text mb-15" style="font-weight:bold;">📅 Upcoming Sunday Holidays</div>
+                        @foreach ($holidays as $holiday)
+                            <div class="mb-10" style="{{ !$loop->last ? 'border-bottom:1px solid rgba(255,255,255,.5); padding-bottom:10px;' : '' }}">
+                                <div class="body-text" style="font-weight:bold; color:#1d4ed8;">
+                                    Sunday Holiday
+                                    <span style="background:#3b82f6; color:#fff; font-size:10px; padding:2px 8px; border-radius:10px; margin-left:5px;">Holiday</span>
+                                </div>
+                                <div class="text-tiny" style="color:#374151;">Weekly holiday — {{ $holiday->format('d M Y') }}</div>
+                            </div>
+                        @endforeach
                     </div>
                 </div>
 
@@ -301,39 +146,19 @@
     </div>
 </div>
 
-@push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    @if ($student && $student->batch_id)
-    // Line chart: 7-day activity
-    const activity = @json($activity);
-    if (typeof ApexCharts !== 'undefined') {
-        new ApexCharts(document.querySelector("#line-chart-7"), {
-            series: [{ name: 'Lectures', data: activity.map(a => a.count) }],
-            chart: { type: 'area', height: 280, toolbar: { show: false } },
-            colors: ['#FF5200'],
-            stroke: { curve: 'smooth', width: 3 },
-            fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.05 } },
-            xaxis: { categories: activity.map(a => a.date) },
-            dataLabels: { enabled: false },
-            grid: { borderColor: '#f1f1f1' },
-        }).render();
-
-        // Donut: Syllabus completion
-        const covered = {{ $coveredTopics }};
-        const remaining = {{ max(0, $totalSyllabus - $coveredTopics) }};
-        new ApexCharts(document.querySelector("#morris-donut-1"), {
-            series: [covered, remaining],
-            chart: { type: 'donut', height: 280 },
-            labels: ['Covered', 'Remaining'],
-            colors: ['#22C55E', '#e5e7eb'],
-            legend: { show: false },
-            dataLabels: { enabled: false },
-            plotOptions: { pie: { donut: { size: '75%' } } },
-        }).render();
-    }
-    @endif
+    // Edit Profile buttons → info alert
+    document.querySelectorAll('.edit-profile-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            Swal.fire({
+                icon: 'info',
+                title: 'Profile Update',
+                text: 'Contact your admin/teacher to update your profile details.',
+                confirmButtonColor: '#FF5200'
+            });
+        });
+    });
 });
 </script>
-@endpush
 @endsection

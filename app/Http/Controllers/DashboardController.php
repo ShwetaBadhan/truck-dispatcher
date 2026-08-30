@@ -29,64 +29,24 @@ class DashboardController extends Controller
 }
 
     // ============ STUDENT DASHBOARD ============
-    private function studentDashboard($user)
-    {
-        $student = $user->student;
-        $batchId = $student?->batch_id;
+   private function studentDashboard($user)
+{
+    $student = $user->student;
 
-         $allLectures = $batchId
-        ? DailyLecture::with(['batch', 'syllabus', 'teacher'])
-            ->where('batch_id', $batchId)
-            ->get()
-        : collect();
-
-        $stats = [
-            'topics'     => $allLectures->pluck('syllabus_id')->unique()->count(),
-            'lectures'   => $allLectures->count(),
-            'assignments'=> $allLectures->where('pdf_path', '!=', null)->count(),
-            'upcoming'   => $allLectures->where('lecture_date', '>=', now()->startOfDay())->count(),
-        ];
-
-        // Last 7 days activity (line chart)
-        $activity = [];
-        for ($i = 6; $i >= 0; $i--) {
-            $date = now()->subDays($i)->format('Y-m-d');
-            $count = $allLectures->where('lecture_date', $date)->count();
-            $activity[] = ['date' => now()->subDays($i)->format('D'), 'count' => $count];
-        }
-
-        // Syllabus progress (donut)
-        $totalSyllabus = Syllabus::where('status', 1)->count();
-        $coveredTopics = $allLectures->pluck('syllabus_id')->unique()->count();
-        $progress = $totalSyllabus > 0 ? round(($coveredTopics / $totalSyllabus) * 100) : 0;
-
-        // Top syllabus topics covered (top sale jaisa)
-        $topTopics = $allLectures->groupBy('syllabus_id')
-            ->map->count()
-            ->sortDesc()
-            ->take(6);
-
-        $syllabusDetails = Syllabus::whereIn('id', $topTopics->keys())->get()->keyBy('id');
-
-        $recentLectures = DailyLecture::with(['syllabus', 'teacher'])
-            ->where('batch_id', $batchId)
-            ->latest('lecture_date')->latest('id')
-            ->take(5)
-            ->get();
-
-        // Upcoming lectures (user location ki jagah)
-        $upcomingLectures = DailyLecture::with(['syllabus', 'teacher'])
-            ->where('batch_id', $batchId)
-            ->where('lecture_date', '>=', now()->startOfDay())
-            ->oldest('lecture_date')
-            ->take(6)
-            ->get();
-
-        return view('pages.student-dashboard', compact(
-            'student', 'stats', 'activity', 'progress', 'totalSyllabus', 'coveredTopics',
-            'topTopics', 'syllabusDetails', 'recentLectures', 'upcomingLectures'
-        ));
+    if ($student) {
+        $student->load(['batch']);
     }
+
+    // Batch ki total lectures
+    $lectureCount = ($student && $student->batch_id)
+        ? DailyLecture::where('batch_id', $student->batch_id)->count()
+        : 0;
+
+   
+    $holidays = collect(range(0, 4))->map(fn ($i) => now()->modify('next sunday')->addWeeks($i));
+
+    return view('pages.student-dashboard', compact('student', 'lectureCount', 'holidays'));
+}
 
     // ============ ADMIN DASHBOARD ============
     private function adminDashboard()
