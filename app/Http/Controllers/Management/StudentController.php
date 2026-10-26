@@ -7,6 +7,7 @@ use App\Models\Batch;
 use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class StudentController extends Controller
 {
@@ -56,14 +57,21 @@ class StudentController extends Controller
 
     public function update(Request $request, Student $student)
     {
-        $data = $this->validateStudent($request, $student);
+         $data = $this->validateStudent($request, $student);
 
-        if ($photo = $this->storeFile($request, 'photo', 'students/photos', $student->photo_path)) $data['photo_path'] = $photo;
-        if ($matric = $this->storeFile($request, 'matric_pdf', 'students/documents', $student->matric_pdf)) $data['matric_pdf'] = $matric;
-        if ($tenth = $this->storeFile($request, 'tenth_pdf', 'students/documents', $student->tenth_pdf)) $data['tenth_pdf'] = $tenth;
-        if ($aadhaar = $this->storeFile($request, 'aadhaar_pdf', 'students/documents', $student->aadhaar_pdf)) $data['aadhaar_pdf'] = $aadhaar;
-
-        $student->update($data);
+         if ($photo = $this->storeFile($request, 'photo', 'students/photos', $student->photo_path)) {
+            $data['photo_path'] = $photo;
+        }
+        if ($matric = $this->storeFile($request, 'matric_pdf', 'students/documents', $student->matric_pdf)) {
+            $data['matric_pdf'] = $matric;
+        }
+        if ($tenth = $this->storeFile($request, 'tenth_pdf', 'students/documents', $student->tenth_pdf)) {
+            $data['tenth_pdf'] = $tenth;
+        }
+        if ($aadhaar = $this->storeFile($request, 'aadhaar_pdf', 'students/documents', $student->aadhaar_pdf)) {
+            $data['aadhaar_pdf'] = $aadhaar;
+        }
+         $student->update($data);
 
         return redirect()->route('students.index')->with('success', 'Student updated successfully!');
     }
@@ -92,11 +100,15 @@ class StudentController extends Controller
     }
 
     // ===== Helpers =====
-    protected function validateStudent(Request $request, ?Student $student = null): array
+  protected function validateStudent(Request $request, ?Student $student = null): array
     {
         return $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:students,email' . ($student ? ',' . $student->id : ''),
+            'email' => [
+                'required', 
+                'email', 
+                Rule::unique('students', 'email')->ignore($student ? $student->id : null)
+            ],
             'phone' => 'nullable|string|max:20',
             'father_name' => 'nullable|string|max:255',
             'mother_name' => 'nullable|string|max:255',
@@ -108,7 +120,7 @@ class StudentController extends Controller
         ]);
     }
 
-    protected function storeFile(Request $request, string $field, string $folder, ?string $oldPath): ?string
+   protected function storeFile(Request $request, string $field, string $folder, ?string $oldPath): ?string
     {
         if (!$request->hasFile($field)) return null;
 
@@ -118,6 +130,7 @@ class StudentController extends Controller
 
         return $request->file($field)->store($folder, 'public');
     }
+
 
 
     public function allStudents()
@@ -131,51 +144,53 @@ class StudentController extends Controller
     return response()->json($students);
 }
 // ✅ STUDENT: 
-public function editProfile()
-{
-    $student = auth()->user()->student;
+  public function editProfile()
+    {
+        $student = auth()->user()->student;
 
-    if (!$student) {
-        return redirect()->route('dashboard')->with('error', 'Student profile not found!');
+        if (!$student) {
+            return redirect()->route('dashboard')->with('error', 'Student profile not found!');
+        }
+
+        return view('pages.students.profile-edit', compact('student'));
     }
 
-    return view('pages.students.profile-edit', compact('student'));
-}
+ public function updateProfile(Request $request)
+    {
+        $student = auth()->user()->student;
 
-public function updateProfile(Request $request)
-{
-    $student = auth()->user()->student;
+        if (!$student) {
+            return redirect()->route('dashboard')->with('error', 'Student profile not found!');
+        }
 
-    if (!$student) {
-        return redirect()->route('dashboard')->with('error', 'Student profile not found!');
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'phone' => 'nullable|string|max:20',
+            'father_name' => 'nullable|string|max:255',
+            'mother_name' => 'nullable|string|max:255',
+            'address' => 'nullable|string',
+            'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'matric_pdf' => 'nullable|file|mimes:pdf|max:5120',
+            'tenth_pdf' => 'nullable|file|mimes:pdf|max:5120',
+            'aadhaar_pdf' => 'nullable|file|mimes:pdf|max:5120',
+        ]);
+
+        if ($photo = $this->storeFile($request, 'photo', 'students/photos', $student->photo_path)) $data['photo_path'] = $photo;
+        if ($matric = $this->storeFile($request, 'matric_pdf', 'students/documents', $student->matric_pdf)) $data['matric_pdf'] = $matric;
+        if ($tenth = $this->storeFile($request, 'tenth_pdf', 'students/documents', $student->tenth_pdf)) $data['tenth_pdf'] = $tenth;
+        if ($aadhaar = $this->storeFile($request, 'aadhaar_pdf', 'students/documents', $student->aadhaar_pdf)) $data['aadhaar_pdf'] = $aadhaar;
+
+        $student->update($data);
+
+        // User table bhi sync karein
+        if ($student->user) {
+            $student->user->update([
+                'name' => $data['name'],
+                'phone' => $data['phone'] ?? $student->user->phone,
+            ]);
+        }
+
+        return redirect()->route('profile.edit')->with('success', 'Profile updated successfully!');
     }
-
-    $data = $request->validate([
-        'name' => 'required|string|max:255',
-        'phone' => 'nullable|string|max:20',
-        'father_name' => 'nullable|string|max:255',
-        'mother_name' => 'nullable|string|max:255',
-        'address' => 'nullable|string',
-        'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-        'matric_pdf' => 'nullable|file|mimes:pdf|max:5120',
-        'tenth_pdf' => 'nullable|file|mimes:pdf|max:5120',
-        'aadhaar_pdf' => 'nullable|file|mimes:pdf|max:5120',
-    ]);
-
-  
-    if ($photo = $this->storeFile($request, 'photo', 'students/photos', $student->photo_path)) $data['photo_path'] = $photo;
-    if ($matric = $this->storeFile($request, 'matric_pdf', 'students/documents', $student->matric_pdf)) $data['matric_pdf'] = $matric;
-    if ($tenth = $this->storeFile($request, 'tenth_pdf', 'students/documents', $student->tenth_pdf)) $data['tenth_pdf'] = $tenth;
-    if ($aadhaar = $this->storeFile($request, 'aadhaar_pdf', 'students/documents', $student->aadhaar_pdf)) $data['aadhaar_pdf'] = $aadhaar;
-
-    $student->update($data);
-
-   
-    $student->user?->update([
-        'name' => $data['name'],
-        'phone' => $data['phone'] ?? null,
-    ]);
-
-    return redirect()->route('profile.edit')->with('success', 'Profile updated successfully!');
 }
-}
+

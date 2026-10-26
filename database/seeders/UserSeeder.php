@@ -13,7 +13,7 @@ class UserSeeder extends Seeder
     {
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // 1. Super Admin
+        // Super Admin
         $admin = User::firstOrCreate(
             ['email' => 'admin@gmail.com'],
             [
@@ -24,8 +24,7 @@ class UserSeeder extends Seeder
                 'email_verified_at' => now(),
             ]
         );
-        $admin->assignRole('admin');
 
-        
+        $admin->assignRole('super-admin');
     }
 }
